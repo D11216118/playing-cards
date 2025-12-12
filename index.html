@@ -287,6 +287,10 @@
         }
 
         function drawCard() {
+            if (gameState.deck.length === 0) {
+                // Deck is empty, create and shuffle a new one
+                gameState.deck = shuffleDeck(createDeck());
+            }
             return gameState.deck.pop();
         }
 
@@ -401,14 +405,21 @@
             let dealerScore = calculateScore(gameState.dealerHand);
             
             // Dealer must hit on < 17
-            while (dealerScore < 17) {
-                gameState.dealerHand.push(drawCard());
-                dealerScore = calculateScore(gameState.dealerHand);
-                render();
-            }
+            const dealerDrawCards = () => {
+                if (dealerScore < 17) {
+                    gameState.dealerHand.push(drawCard());
+                    dealerScore = calculateScore(gameState.dealerHand);
+                    render();
+                    
+                    // Continue drawing with delay for better visual feedback
+                    setTimeout(dealerDrawCards, 500);
+                } else {
+                    // Dealer finished, determine winner
+                    determineWinner();
+                }
+            };
             
-            // Determine winner
-            determineWinner();
+            dealerDrawCards();
         }
 
         function determineWinner() {
